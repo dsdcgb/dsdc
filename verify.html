@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>완주 확인 - 스탬프 투어</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;padding:16px}
+h1{margin:0 0 12px 0;font-size:18px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:10px}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
+.card{border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin-top:12px}
+.ok{color:#16a34a}
+.bad{color:#dc2626}
+video{width:100%;max-height:40vh;border-radius:12px;background:#000}
+.small{font-size:12px;color:#6b7280}
+</style>
+<script src="https://unpkg.com/@zxing/browser@latest"></script>
+</head>
+<body>
+<h1>완주 확인</h1>
+<div class="row">
+<input id="code" class="input" placeholder="방문자 완주코드(또는 QR 스캔) 붙여넣기" />
+<button class="btn" id="verifyBtn">검증</button>
+</div>
+<p class="small">또는 아래 카메라로 방문자 폰의 완주코드 QR을 스캔하세요.</p>
+<div class="card">
+<video id="preview" muted playsinline></video>
+</div>
+<div id="result" class="card" style="display:none"></div>
+
+
+<script>
+const SALT = 'CHANGE_ME_SALT_32+CHARS'; // index.html과 동일해야 합니다
+const STATIONS = ['DRONE','VR','HUMANOID','BATTLE'];
+
+
+function dateKey(d=new Date()){ return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul'}).format(d).replace(/\./g,'-').replace(/\s/g,'').replace(/-$/,''); }
+
+
+async function sha256Hex(str){
+const enc = new TextEncoder();
+const buf = await crypto.subtle.digest('SHA-256', enc.encode(str));
+return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+
+function parseCode(s){
+// 형식: COMP1;n=...;d=YYYY-MM-DD;s=A,B,C,D;h=abcdef123456
+if (!/^COMP1;/.test(s)) return null;
+const parts = s.replace(/^COMP1;/,'').split(';');
+const map = {};
+for (const p of parts){ const [k,v] = p.split('='); map[k]=v; }
+if (!map.n || !map.d || !map.s || !map.h) return null;
+return { n:map.n, d:map.d, s:map.s.split(','), h:map.h };
+}
+
+
+async function verify(raw){
+const data = parseCode(raw||'');
+const box = document.getElementById('result');
+box.style.display='block';
+if (!data){ box.innerHTML = '<b class="bad">형식이 올바르지 않습니다.</b>'; return; }
+
+
+// 날짜 허용(당일 ±1일)
+const today = dateKey();
+const okDate = [today, dateKey(new Date(Date.now()-86400000)), dateKey(new Date(Date.now()+86400000))].includes(data.d);
+const canonical = `n=${data.n};d=${data.d};s=${data.s.slice().sort().join(',')}`;
+const expect = (await sha256Hex(`${SALT}|${canonical}`)).slice(0,12);
+const sigOk = (expect === data.h);
+const hasAll = STATIONS.every(x=>data.s.includes(x));
+
+
+if (sigOk && okDate && hasAll){
+box.innerHTML = `<b class="ok">완주 확인 ✅</b><div class="small">일자 ${data.d} / 스탬프 ${data.s.join(', ')}</div>`;
+} else {
+let reasons = [];
+if (!sigOk) reasons.push('서명 불일치');
+if (!okDate) reasons.push('유효일 아님');
+if (!hasAll) reasons.push('스탬프 부족');
+box.innerHTML = `<b class="bad">유효하지 않음 ❌</b><div class="small">${reasons.join(' / ')}</div>`;
+}
+}
+
+
+document.getElementById('verifyBtn').addEventListener('click', ()=> verify(document.getElementById('code').value.trim()));
+</html>
