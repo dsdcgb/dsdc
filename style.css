@@ -1,5 +1,5 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
     background-color: #f4f7f9;
     color: #333;
     display: flex;
@@ -35,7 +35,7 @@ p {
 .camera-container {
     position: relative;
     width: 100%;
-    padding-top: 75%; /* 4:3 ºñÀ² À¯Áö */
+    padding-top: 75%; /* 4:3 ÂºÃ±Ã€Â² Ã€Â¯ÃÃ¶ */
     background-color: #eee;
     border-radius: 8px;
     overflow: hidden;
@@ -120,4 +120,5 @@ p {
     font-size: 1rem;
     font-weight: bold;
     color: #0056b3;
+
 }
