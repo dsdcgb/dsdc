@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>달서디지털창작센터 스탬프투어</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>달서디지털창작센터 스탬프투어</h1>
+        <p>체험 QR코드를 스캔하여 스탬프를 모아보세요!</p>
+
+        <div class="camera-container">
+            <video id="qr-scanner" autoplay playsinline></video>
+            <div id="loading-message">카메라를 불러오는 중...</div>
+            <div id="error-message" class="hidden">카메라 접근에 실패했습니다.</div>
+        </div>
+        
+        <div class="stamps-container">
+            <div class="stamp" id="stamp-dron">
+                <img src="https://via.placeholder.com/150/EEEEEE?text=팝드론" alt="팝드론 스탬프">
+                <p>팝드론</p>
+                <span class="stamp-status">미획득</span>
+            </div>
+            <div class="stamp" id="stamp-vr">
+                <img src="https://via.placeholder.com/150/EEEEEE?text=VR+레이싱" alt="VR 레이싱 스탬프">
+                <p>VR 레이싱</p>
+                <span class="stamp-status">미획득</span>
+            </div>
+        </div>
+        
+        <div id="status-message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.0.0/dist/jsQR.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
